@@ -1,13 +1,16 @@
 from datetime import datetime
 import locale
 
+
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
 locale.setlocale(locale.LC_ALL, "")
+bootstrap = Bootstrap(app)
 
 
 class Blogpost(db.Model):
