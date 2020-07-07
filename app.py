@@ -1,12 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
-from flask_sqlalchemy import SQLAlchemy 
 from datetime import datetime
+import locale
+
+from flask import Flask, render_template, request, redirect, url_for
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///blog.db'
-
+app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
+locale.setlocale(locale.LC_ALL, "")
 
 
 class Blogpost(db.Model):
@@ -58,4 +59,4 @@ def addpost():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
