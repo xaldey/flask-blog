@@ -31,6 +31,7 @@ class Post(db.Model):
     author = db.Column(db.String(20))
     date_posted = db.Column(db.DateTime)
     content = db.Column(db.Text)
+    is_published = db.Column(db.Boolean, default=False)
 
     tags = db.relationship('Tag', secondary=post_tags, backref=db.backref('posts', lazy='dynamic'))
 
@@ -38,6 +39,8 @@ class Post(db.Model):
 class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100))
+
+    # posts = db.relationship('Post', secondary=post_tags, backref=db.backref('tags', lazy='dynamic'))
 
 
 @app.route('/')
