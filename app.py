@@ -5,15 +5,26 @@ import locale
 from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_bootstrap import Bootstrap
+from flask_migrate import Migrate, MigrateCommand
+from flask_script import Manager
 
 app = Flask(__name__)
 app.config.from_pyfile('config.py')
 db = SQLAlchemy(app)
 locale.setlocale(locale.LC_ALL, "")
 bootstrap = Bootstrap(app)
+migrate = Migrate(app, db)
+manager = Manager(app)
+manager.add_command('db', MigrateCommand)
 
 
-class Blogpost(db.Model):
+post_tags = db.Table('post_tags',
+                     db.Column('post_id', db.Integer, db.ForeignKey('post.id')),
+                     db.Column('tag_id', db.Integer, db.ForeignKey('tag.id'))
+                     )
+
+
+class Post(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50))
     subtitle = db.Column(db.String(50))
@@ -21,10 +32,17 @@ class Blogpost(db.Model):
     date_posted = db.Column(db.DateTime)
     content = db.Column(db.Text)
 
+    tags = db.relationship('Tag', secondary=post_tags, backref=db.backref('posts', lazy='dynamic'))
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))
+
 
 @app.route('/')
 def index():
-    posts = Blogpost.query.order_by(Blogpost.date_posted.desc()).all()
+    posts = Post.query.order_by(Post.date_posted.desc()).all()
 
     return render_template('index.html', posts=posts)
 
@@ -36,7 +54,7 @@ def about():
 
 @app.route('/post/<int:post_id>')
 def post(post_id):
-    post = Blogpost.query.filter_by(id=post_id).one()
+    post = Post.query.filter_by(id=post_id).one()
 
     return render_template('post.html', post=post)
 
@@ -53,7 +71,7 @@ def addpost():
     author = request.form['author']
     content = request.form['content']
 
-    post = Blogpost(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
+    post = Post(title=title, subtitle=subtitle, author=author, content=content, date_posted=datetime.now())
 
     db.session.add(post)
     db.session.commit()
